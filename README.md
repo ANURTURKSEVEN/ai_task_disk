@@ -24,7 +24,7 @@ The purpose of this project is to provide a lightweight task management solution
 ##Installation
 
 1. Clone the repository:
-  git clone https://github.com/your-username/ai-task-list.git
+  git clone https://github.com/your-username/task-list.git
 
 2. Install dependencies:
   pip install -r requirements.txt
