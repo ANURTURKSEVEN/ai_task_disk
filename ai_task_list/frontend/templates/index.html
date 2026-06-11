@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Destekli Görev Listesi</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>AI Destekli Görev Listesi</h1>
+        <p>Projelerini ve günlük görevlerini yönet.</p>
+    </div>
+
+    <!-- GÖREV EKLEME -->
+    <div class="form-section">
+
+        <h2>Yeni Görev Ekle</h2>
+
+        <form action="{{ url_for('add_task') }}"
+              method="POST"
+              class="task-form">
+
+            <input
+                type="text"
+                name="title"
+                placeholder="Görev adı..."
+                required
+            >
+
+            <input
+                type="text"
+                name="project_name"
+                placeholder="Proje / Kategori"
+                required
+            >
+
+            <input
+                type="date"
+                name="date"
+                id="task-date"
+                min="{{ today }}"
+                required
+            >
+
+            <select name="priority" required>
+                <option value="Yüksek">Yüksek</option>
+                <option value="Orta" selected>Orta</option>
+                <option value="Düşük">Düşük</option>
+            </select>
+
+            <button type="submit">
+                Görev Ekle
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- BUGÜN PANELLERİ -->
+    <div class="today-wrapper">
+
+        <!-- BUGÜN YAPILACAK -->
+        <div class="today-box">
+
+            <h2>Bugün Yapılacaklar</h2>
+
+            <div id="today-pending-list" class="task-dropzone">
+
+                {% for task in today_pending_tasks %}
+
+                    <div class="task-card priority-card-{{ task.priority|lower }}"
+                         draggable="true"
+                         data-task-id="{{ task.id }}">
+
+                        <form
+                            action="{{ url_for('toggle_task', task_id=task.id) }}"
+                            method="POST"
+                        >
+                            <input
+                                type="checkbox"
+                                onchange="this.form.submit()"
+                            >
+                        </form>
+
+                        <div class="task-info">
+                            <h3>{{ task.title }}</h3>
+                            <p>
+                                {{ task.project_name }}
+                                •
+                                {{ task.date }}
+                            </p>
+                        </div>
+
+                        <div class="task-actions">
+                            <form
+                                action="{{ url_for('delete_task', task_id=task.id) }}"
+                                method="POST"
+                            >
+                                <button type="submit" class="delete-btn">Sil</button>
+                            </form>
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <p class="empty-text">
+                        Bugün görev yok.
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        <!-- BUGÜN TAMAMLANAN -->
+        <div class="today-box">
+
+            <h2>Bugün Tamamlananlar</h2>
+
+            {% for task in today_completed_tasks %}
+
+                <div class="task-card completed priority-card-{{ task.priority|lower }}">
+
+                    <form
+                        action="{{ url_for('toggle_task', task_id=task.id) }}"
+                        method="POST"
+                    >
+                        <input
+                            type="checkbox"
+                            onchange="this.form.submit()"
+                            checked
+                        >
+                    </form>
+
+                    <div class="task-info">
+                        <h3>{{ task.title }}</h3>
+                        <p>
+                            {{ task.project_name }}
+                            •
+                            {{ task.date }}
+                        </p>
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <p class="empty-text">
+                    Henüz tamamlanan görev yok.
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <!-- PROJELER -->
+    <div class="projects-section">
+
+        <h2>Projeler</h2>
+
+        {% for project in projects %}
+
+            <div class="project-box">
+
+                <div class="project-header">
+                    <h2>{{ project.name }}</h2>
+                </div>
+
+                <div class="project-columns">
+
+                    <!-- YAPILACAKLAR -->
+                    <div class="project-column">
+
+                        <h3>Yapılacaklar</h3>
+
+                        {% for task in project.pending_tasks %}
+
+                            <div class="task-card priority-card-{{ task.priority|lower }}">
+
+                                <form
+                                    action="{{ url_for('toggle_task', task_id=task.id) }}"
+                                    method="POST"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        onchange="this.form.submit()"
+                                    >
+                                </form>
+
+                                <div class="task-info">
+                                    <h3>{{ task.title }}</h3>
+                                    <p>{{ task.date }}</p>
+                                </div>
+
+                                <div class="task-actions">
+                                    <form
+                                        action="{{ url_for('delete_task', task_id=task.id) }}"
+                                        method="POST"
+                                    >
+                                        <button type="submit" class="delete-btn">Sil</button>
+                                    </form>
+                                </div>
+
+                            </div>
+
+                        {% else %}
+
+                            <p class="empty-text">
+                                Görev yok.
+                            </p>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- TAMAMLANANLAR -->
+                    <div class="project-column">
+
+                        <h3>Tamamlananlar</h3>
+
+                        {% for task in project.completed_tasks %}
+
+                            <div class="task-card completed priority-card-{{ task.priority|lower }}">
+
+                                <form
+                                    action="{{ url_for('toggle_task', task_id=task.id) }}"
+                                    method="POST"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        onchange="this.form.submit()"
+                                        checked
+                                    >
+                                </form>
+
+                                <div class="task-info">
+                                    <h3>{{ task.title }}</h3>
+                                    <p>{{ task.date }}</p>
+                                </div>
+
+                                <div class="task-actions">
+                                    <form
+                                        action="{{ url_for('delete_task', task_id=task.id) }}"
+                                        method="POST"
+                                    >
+                                        <button type="submit" class="delete-btn">Sil</button>
+                                    </form>
+                                </div>
+
+                            </div>
+
+                        {% else %}
+
+                            <p class="empty-text">
+                                Henüz tamamlanan görev yok.
+                            </p>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
